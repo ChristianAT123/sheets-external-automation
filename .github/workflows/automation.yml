@@ -1,33 +1,25 @@
 # .github/workflows/automation.yml
 name: Sheets Automations
-
 on:
   workflow_dispatch: {}
 
 jobs:
   run:
     runs-on: ubuntu-latest
+    # If your secret was saved in an Environment, uncomment the next line
+    # environment: prod
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
       - name: Run automations
         run: node index.js
         env:
-          # Use either a repo Variable or a Secret for the sheet ID.
-          # If you stored it as a Variable:
-          SPREADSHEET_ID: ${{ vars.SPREADSHEET_ID }}
-          # If you stored it as a Secret instead, use this line and delete the vars line:
-          # SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-
-          # Service account JSON must be a Secret
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
