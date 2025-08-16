@@ -130,9 +130,6 @@ function extractHandle(url) {
         .split(/[\/?&]/)[0]
         .toLowerCase();
 }
-function includesCase(text, needle) {
-  return (text || "").toString().toLowerCase().includes(needle);
-}
 async function getSpreadsheetMeta(sheets, spreadsheetId) {
   const res = await sheets.spreadsheets.get({ spreadsheetId });
   return res.data;
@@ -685,12 +682,9 @@ async function findTrueBottomRowAPI(sheets, spreadsheetId, title, lc, headerRow,
 /* =========================
    Runner
    ========================= */
-
 async function run() {
   const spreadsheetId = process.env.SPREADSHEET_ID;
-  if (!sp
-
-readsheetId) throw new Error("Missing SPREADSHEET_ID secret");
+  if (!spreadsheetId) throw new Error("Missing SPREADSHEET_ID secret");
 
   const auth = getAuth();
   const sheets = sheetsClient(auth);
