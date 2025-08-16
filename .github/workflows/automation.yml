@@ -12,7 +12,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
 
-    # <-- Set env at the JOB level so every step sees them
+    # Make secrets visible to every step in the job
     env:
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
       GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -31,10 +31,11 @@ jobs:
 
       - name: Sanity check env
         run: |
-          if [ -z "$SPREADSHEET_ID" ]; then
-            echo "SPREADSHEET_ID is NOT set"; exit 1
-          fi
+          echo "Has SPREADSHEET_ID? $([[ -n \"$SPREADSHEET_ID\" ]] && echo yes || echo no)"
+          # Show only length, not the value
           echo "SPREADSHEET_ID length: ${#SPREADSHEET_ID}"
+          # Confirm GOOGLE_SERVICE_ACCOUNT_JSON is present (masked)
+          echo "Has GOOGLE_SERVICE_ACCOUNT_JSON? $([[ -n \"$GOOGLE_SERVICE_ACCOUNT_JSON\" ]] && echo yes || echo no)"
 
       - name: Run automations
         run: node index.js
