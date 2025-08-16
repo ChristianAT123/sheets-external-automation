@@ -1,34 +1,33 @@
+# .github/workflows/automation.yml
 name: Sheets Automations
 
 on:
   workflow_dispatch: {}
-  # optional: scheduled runs as safety net
-  # schedule:
-  #   - cron: "*/5 * * * *"
-
-permissions:
-  contents: read
-  actions: write
-
-concurrency:
-  group: sheets-materializer
-  cancel-in-progress: true
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm ci || npm i
+        run: npm ci
 
       - name: Run automations
-        env:
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets/GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node index.js
+        env:
+          # Use either a repo Variable or a Secret for the sheet ID.
+          # If you stored it as a Variable:
+          SPREADSHEET_ID: ${{ vars.SPREADSHEET_ID }}
+          # If you stored it as a Secret instead, use this line and delete the vars line:
+          # SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+
+          # Service account JSON must be a Secret
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
