@@ -9,6 +9,6 @@
   },
   "dependencies": {
     "google-auth-library": "^9.14.1",
-    "googleapis": "^141.0.0"
+    "googleapis": "^129.0.0"
   }
 }

@@ -1,30 +1,29 @@
 name: Sheets Automations
 
 on:
-  push:                # runs whenever you push to main
-    branches:
-      - main
-  schedule:            # runs every 30 minutes
-    - cron: "*/30 * * * *"
-  workflow_dispatch:   # still allows manual run from Actions tab
+  push:
+    branches: [ main ]       # run on every push to main
+  schedule:
+    - cron: "*/30 * * * *"   # run every 30 minutes
+  workflow_dispatch:         # allow manual runs from Actions tab
 
 jobs:
-  run-automation:
+  run:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: "20"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci || npm i
 
-      - name: Run script
-        run: node index.js
+      - name: Run automations
         env:
-          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node index.js
