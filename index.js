@@ -6,11 +6,6 @@
 // Runs in GitHub Actions using repo secrets:
 //   - SPREADSHEET_ID
 //   - GOOGLE_SERVICE_ACCOUNT_JSON  (entire service account JSON)
-//
-// Local test (optional):
-//   export SPREADSHEET_ID="<your_sheet_id>"
-//   export GOOGLE_SERVICE_ACCOUNT_JSON="$(cat service-account.json)"
-//   node index.js
 
 import { google } from "googleapis";
 
@@ -18,7 +13,6 @@ import { google } from "googleapis";
    CONFIG (tabs & columns)
    ========================= */
 
-// Make sure these match your real tab names EXACTLY
 const SHEETS = [
   "GeneralCreators - Outreach", "CreatorsWithNoYoutube",
   "LongFormCreators - Outreach", "ASMR, Relaxation & Satisfying",
@@ -32,38 +26,32 @@ const SHEETS = [
   "Luxury & High-End Lifestyle", "Real Estate & Investing",
   "Motivational & Self-Development"
 ];
-
 const STATUS_SHEETS = SHEETS.concat(["Interested", "Meeting Set"]);
 
-// Columns (1-based)
 const STATUS_COLS = [8, 11];    // H and K
-const ID_COL       = 20;        // T (unique ID)
-const DATE_COL     = 1;         // A (manual timestamp)
-const YT_COL       = 3;         // C (YouTube link/handle)
+const ID_COL       = 20;        // T
+const DATE_COL     = 1;         // A
+const YT_COL       = 3;         // C
 
-// Colors (hex)
-const BLANK_HEX    = "#c9daf8";
-const DUP_HEX      = "#FF0000";
+const BLANK_HEX = "#c9daf8";
+const DUP_HEX   = "#FF0000";
 
-// MSN copier config
 const MSN_DEST_SHEET       = "MSN Creators";
-const MSN_ID_COL           = 20;      // T
+const MSN_ID_COL           = 20; // T
 const MSN_HEADER_ROW       = 1;
-const MSN_CHECKBOX_COL     = 6;       // F
-const MSN_SOURCE_WHITELIST = [];      // [] = all sources
+const MSN_CHECKBOX_COL     = 6;  // F
+const MSN_SOURCE_WHITELIST = []; // [] = all sources
 const MSN_SKIP_SET         = new Set([MSN_DEST_SHEET, "Automation Log"]);
 
 /* =========================
    Behavior switches
    ========================= */
 
-// true = delete from source after confirmed copy; false = copy-only
 const MIGRATE_STATUS_AS_MOVE = true;
 const MIGRATE_MSN_AS_MOVE    = true;
 
-// Safety checks
-const REQUIRE_DEST_ID_BEFORE_DELETE        = true;  // only delete if ID landed in destination
-const VERIFY_SOURCE_CHECKSUM_BEFORE_DELETE = true;  // only delete if row content unchanged since copy
+const REQUIRE_DEST_ID_BEFORE_DELETE        = true;
+const VERIFY_SOURCE_CHECKSUM_BEFORE_DELETE = true;
 
 /* =========================
    Auth & client
@@ -159,8 +147,8 @@ function simpleRowChecksum(rowArray) {
 
 async function highlightDuplicatesAndBlanksOnC(sheets, spreadsheetId) {
   const meta = await getSpreadsheetMeta(sheets, spreadsheetId);
-  const allMap = {};        // handle → [{ sheetTitle, sheetId, row, date }]
-  const blanksBySheet = {}; // sheetTitle → [rowNumbers]
+  const allMap = {};
+  const blanksBySheet = {};
 
   for (const title of SHEETS) {
     const s = meta.sheets?.find((x) => x.properties?.title === title);
@@ -280,7 +268,7 @@ async function runMigrations(sheets, spreadsheetId) {
   let meetingIds    = await buildIdSet("Meeting Set");
 
   const copyRequests = [];
-  const perSheetDeletePlan = new Map(); // title -> [{rowIdx1, checksum, dest, id}]
+  const perSheetDeletePlan = new Map();
 
   for (const title of STATUS_SHEETS) {
     const s = meta.sheets?.find((x) => x.properties?.title === title);
@@ -327,7 +315,6 @@ async function runMigrations(sheets, spreadsheetId) {
         dest = "Interested";
       if (!dest) continue;
 
-      // Ensure ID
       let id = idCol[i];
       if (!id) {
         id = generateUniqueId();
@@ -335,11 +322,9 @@ async function runMigrations(sheets, spreadsheetId) {
         idWrites.push([rowIdx1, id]);
       }
 
-      // Skip if already in dest
       if (dest === "Interested" && interestedIds.has(id)) continue;
       if (dest === "Meeting Set" && meetingIds.has(id)) continue;
 
-      // Determine append row in destination
       if (dest === "Interested") {
         interestedNextRow = await getNextDestRow("Interested", interestedNextRow);
       } else {
@@ -347,7 +332,6 @@ async function runMigrations(sheets, spreadsheetId) {
       }
       const destRow = dest === "Interested" ? interestedNextRow++ : meetingNextRow++;
 
-      // Copy values + formatting
       const destSheetId = meta.sheets?.find((x) => x.properties?.title === dest)?.properties?.sheetId;
       const colCount = s.properties.gridProperties.columnCount;
 
@@ -496,7 +480,7 @@ async function runMsnCheckboxCopy(sheets, spreadsheetId) {
   )) + 1;
 
   const copyRequests = [];
-  const perSheetDeletePlan = new Map(); // title -> [{rowIdx1, checksum, id}]
+  const perSheetDeletePlan = new Map();
 
   for (const s of meta.sheets || []) {
     const title = s.properties?.title || "";
@@ -504,7 +488,7 @@ async function runMsnCheckboxCopy(sheets, spreadsheetId) {
     if (MSN_SOURCE_WHITELIST.length && !MSN_SOURCE_WHITELIST.includes(title)) continue;
 
     const lr = s.properties.gridProperties.rowCount || 1;
-    if (lr <= MSN_HEADER_ROW) continue;
+    if (lr <= MSN_HEADER_ROW) return;
 
     const lc = Math.max(s.properties.gridProperties.columnCount || 1, MSN_ID_COL);
     const rangeFlags = `${title}!${indexToA1Col(MSN_CHECKBOX_COL)}${MSN_HEADER_ROW + 1}:${indexToA1Col(MSN_CHECKBOX_COL)}${lr}`;
@@ -653,7 +637,6 @@ async function runMsnCheckboxCopy(sheets, spreadsheetId) {
 /* =========================
    Support: true-bottom finder for MSN
    ========================= */
-
 async function findTrueBottomRowAPI(sheets, spreadsheetId, title, lc, headerRow, checkboxCol) {
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
