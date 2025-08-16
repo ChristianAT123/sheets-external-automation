@@ -1,16 +1,18 @@
 # node
 node_modules/
-package-lock.json
 
 # env & secrets (never commit these)
 .env
 .env.*
-credentials.json
-token.json
+*.pem
+*.p12
+*.key
+*.crt
+*.pfx
+*.der
+*.jks
+*.keystore
+*.kdb
 
-# logs & OS junk
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.DS_Store
-Thumbs.db
+# if you keep JSON secrets, put them under /secrets and ignore that folder:
+secrets/**/*.json
