@@ -1,0 +1,14 @@
+{
+  "name": "external-sheets-automation",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "run:once": "node index.js"
+  },
+  "dependencies": {
+    "google-auth-library": "^9.14.1",
+    "googleapis": "^141.0.0"
+  }
+}
