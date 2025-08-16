@@ -20,7 +20,7 @@ import { google } from "googleapis";
 const SHEETS = [
   "GeneralCreators - Outreach", "CreatorsWithNoYoutube",
   "LongFormCreators - Outreach", "ASMR, Relaxation & Satisfying",
-  "Toys & Kid-Focused Entertainmen", // note your uploaded file uses the shortened name
+  "Toys & Kid-Focused Entertainment", // note your uploaded file uses the shortened name
   "Video Podcasts",
   "Personal Finance & Investing", "Health & Wellness",
   "Beauty & Fashion", "Gaming", "Education & How-To Content",
